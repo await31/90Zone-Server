@@ -8,8 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="11.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\90Zone.BusinessObjects\90Zone.BusinessObjects.csproj" />
-    <ProjectReference Include="..\90Zone.DataAccessObjects\90Zone.DataAccessObjects.csproj" />
   </ItemGroup>
 
 </Project>
