@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>_90Zone.Repositories</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\90Zone.BusinessObjects\90Zone.BusinessObjects.csproj" />
+    <ProjectReference Include="..\90Zone.DataAccessObjects\90Zone.DataAccessObjects.csproj" />
+  </ItemGroup>
+
+</Project>
