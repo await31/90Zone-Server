@@ -1,4 +1,5 @@
 ﻿using _90Zone.BusinessObjects.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace _90Zone.Repositories {
     public class CountryRepository : ICountryRepository {
@@ -9,7 +10,8 @@ namespace _90Zone.Repositories {
         }
 
         public ICollection<Country> GetCountries() {
-            return _context.Countries.ToList();
+            return _context.Countries
+                .ToList();
         }
 
         public Country GetCountry(int id) {

@@ -29,14 +29,27 @@ namespace _90Zone.Repositories {
         }
 
         public bool CreateLeague(League league, int countryId) {
-            var countryEntity = _context.Countries.FirstOrDefault(a => a.Id == countryId);
 
-            if (countryEntity == null) {
+            var country = _context.Countries.FirstOrDefault(a=>a.Id==countryId);
+
+            if (country == null) {
                 return false;
             }
 
-            league.Country = countryEntity;
+            league.Country = country;
             _context.Add(league);
+            return Save();
+        }
+
+        public bool UpdateLeague(League league, int countryId) {
+            var country = _context.Countries.FirstOrDefault(a => a.Id == countryId);
+
+            if (country == null) {
+                return false;
+            }
+
+            league.Country = country;
+            _context.Update(league);
             return Save();
         }
 

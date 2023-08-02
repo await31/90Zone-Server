@@ -11,11 +11,12 @@ namespace _90Zone.App.Controllers {
     public class LeagueController : ControllerBase {
 
         private readonly ILeagueRepository _leagueRepository;
+        private readonly ICountryRepository _countryRepository;
         private readonly IMapper _mapper;
 
-        public LeagueController(ILeagueRepository leagueRepository, IMapper mapper)
-        {
+        public LeagueController(ILeagueRepository leagueRepository, ICountryRepository countryRepository, IMapper mapper) {
             _leagueRepository = leagueRepository;
+            _countryRepository = countryRepository;
             _mapper = mapper;
         }
 
@@ -45,28 +46,17 @@ namespace _90Zone.App.Controllers {
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateLeague([FromQuery] int countryId, [FromBody] LeagueDto leagueCreate) {
-            if (leagueCreate == null)
-                return BadRequest(ModelState);
+        public JsonResult CreateLeague(League league, int countryId) {
+            _leagueRepository.CreateLeague(league, countryId);
+            return new JsonResult("League created successfully");
+        }
 
-            var league = _leagueRepository.GetLeague(leagueCreate.Id);
-
-            if (league != null) {
-                ModelState.AddModelError("", "League already exists");
-                return StatusCode(422, ModelState);
-            }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var leagueMap = _mapper.Map<League>(leagueCreate);
-
-            if (!_leagueRepository.CreateLeague(leagueMap, countryId)) {
-                ModelState.AddModelError("", "Something went wrong while saving");
-                return StatusCode(500, ModelState);
-            }
-
-            return Ok("Successfully created");
+        [HttpPut]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public JsonResult UpdateLeague(League league, int countryId) {
+            _leagueRepository.UpdateLeague(league, countryId);
+            return new JsonResult("League created successfully");
         }
     }
 }
