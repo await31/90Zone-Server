@@ -41,15 +41,16 @@ namespace _90Zone.Repositories {
             return Save();
         }
 
-        public bool UpdateLeague(League league, int countryId) {
-            var country = _context.Countries.FirstOrDefault(a => a.Id == countryId);
-
-            if (country == null) {
+        public bool UpdateLeague(League updatedLeague) {
+            var existingLeague = _context.Leagues
+                .Include(a => a.Country)
+                .FirstOrDefault(a => a.Id == updatedLeague.Id);
+            if (existingLeague == null) {
                 return false;
             }
-
-            league.Country = country;
-            _context.Update(league);
+            existingLeague.Name = updatedLeague.Name;
+            existingLeague.Country = updatedLeague.Country;
+            _context.Update(existingLeague);
             return Save();
         }
 

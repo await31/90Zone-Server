@@ -46,17 +46,18 @@ namespace _90Zone.App.Controllers {
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public JsonResult CreateLeague(League league, int countryId) {
+        public IActionResult CreateLeague([FromBody] League league, int countryId) {
             _leagueRepository.CreateLeague(league, countryId);
-            return new JsonResult("League created successfully");
+            return Ok(league);
         }
 
         [HttpPut]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public JsonResult UpdateLeague(League league, int countryId) {
-            _leagueRepository.UpdateLeague(league, countryId);
-            return new JsonResult("League created successfully");
+        public JsonResult UpdateLeague(League leagueDto) {
+            var leagueEntity = _mapper.Map<League>(leagueDto);
+            _leagueRepository.UpdateLeague(leagueEntity);
+            return new JsonResult("Update successfully");
         }
     }
 }
