@@ -46,18 +46,51 @@ namespace _90Zone.App.Controllers {
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateLeague([FromBody] League league, int countryId) {
-            _leagueRepository.CreateLeague(league, countryId);
+        public IActionResult CreateLeague([FromBody] League league, [FromQuery] int countryId) {
+            if (league == null) {
+                return BadRequest("Invalid league data.");
+            }
+
+            var createdLeague = _leagueRepository.CreateLeague(league, countryId);
+            if (createdLeague == null) {
+                return BadRequest("Failed to create league.");
+            }
+            return Ok(league);
+
+        }
+
+        [HttpPut("{id}")]
+        [ProducesResponseType(200, Type = typeof(League))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult EditLeague(int id,[FromBody] League updateLeagueRequest, [FromQuery] int countryId) {
+            if (!_countryRepository.CountryExist(id))
+                return NotFound();
+
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
+            var league = _leagueRepository.GetLeague(id);
+
+            _leagueRepository.UpdateLeague(id, updateLeagueRequest, countryId);
             return Ok(league);
         }
 
-        [HttpPut]
+        [HttpDelete]
+        [Route("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public JsonResult UpdateLeague(League leagueDto) {
-            var leagueEntity = _mapper.Map<League>(leagueDto);
-            _leagueRepository.UpdateLeague(leagueEntity);
-            return new JsonResult("Update successfully");
+        public IActionResult DeleteLeague([FromRoute] int id) {
+
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
+
+            var league = _leagueRepository.GetLeague(id);
+
+            _leagueRepository.DeleteLeague(id);
+
+            return Ok(league);
         }
     }
 }

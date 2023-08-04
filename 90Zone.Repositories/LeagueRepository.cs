@@ -29,28 +29,29 @@ namespace _90Zone.Repositories {
         }
 
         public bool CreateLeague(League league, int countryId) {
-
-            var country = _context.Countries.FirstOrDefault(a=>a.Id==countryId);
-
-            if (country == null) {
-                return false;
-            }
-
+            var country = _context.Countries.FirstOrDefault(c => c.Id == countryId);
             league.Country = country;
             _context.Add(league);
             return Save();
         }
 
-        public bool UpdateLeague(League updatedLeague) {
-            var existingLeague = _context.Leagues
-                .Include(a => a.Country)
-                .FirstOrDefault(a => a.Id == updatedLeague.Id);
-            if (existingLeague == null) {
-                return false;
+        public bool UpdateLeague(int id, League leagueUpdateRequest, int countryId) {
+
+            var country = _context.Countries.FirstOrDefault(c => c.Id == countryId);
+
+            var league = _context.Leagues.FirstOrDefault(c=>c.Id== id);
+
+            if(league!=null && country != null) {
+                league.Name = leagueUpdateRequest.Name;
+                league.Country = country;
             }
-            existingLeague.Name = updatedLeague.Name;
-            existingLeague.Country = updatedLeague.Country;
-            _context.Update(existingLeague);
+
+            return Save();
+        }
+
+        public bool DeleteLeague(int id) {
+            var league = _context.Leagues.FirstOrDefault(a => a.Id == id);
+            _context.Remove(league);
             return Save();
         }
 

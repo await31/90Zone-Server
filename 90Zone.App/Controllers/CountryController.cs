@@ -27,16 +27,43 @@ namespace _90Zone.App.Controllers {
             return Ok(countries);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route("{id}")]
         [ProducesResponseType(200, Type = typeof(Country))]
         [ProducesResponseType(400)]
-        public IActionResult GetCountry(int id) {
+        public IActionResult GetCountry([FromRoute] int id) {
             if (!_countryRepository.CountryExist(id))
                 return NotFound();
             var country = _mapper.Map<CountryDto>(_countryRepository.GetCountry(id));
             if (!ModelState.IsValid) {
                 return BadRequest(ModelState);
             }
+            return Ok(country);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateCountry([FromBody] Country country) {
+            _countryRepository.CreateCountry(country);
+            return Ok(country);
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        [ProducesResponseType(200, Type = typeof(Country))]
+        [ProducesResponseType(400)]
+        public IActionResult EditCountry([FromRoute] int id, Country updateCountryRequest) {
+            if (!_countryRepository.CountryExist(id))
+                return NotFound();
+
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
+
+            var country = _countryRepository.GetCountry(id);
+
+            _countryRepository.EditCountry(id, updateCountryRequest);
             return Ok(country);
         }
 
@@ -54,6 +81,25 @@ namespace _90Zone.App.Controllers {
                 return BadRequest(ModelState);
             }
             return Ok(leagues);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult DeleteCountry([FromRoute] int id) {
+            if (!_countryRepository.CountryExist(id))
+                return NotFound();
+
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
+
+            var country = _countryRepository.GetCountry(id);
+
+            _countryRepository.DeleteCountry(id);
+
+            return Ok(country);
         }
     }
 }

@@ -11,7 +11,8 @@ namespace _90Zone.Repositories {
         League GetLeague(int id);
         bool LeagueExist(int id);
         bool CreateLeague(League league, int countryId);
-        bool UpdateLeague(League existingLeague);
+        bool UpdateLeague(int id, League league, int countryId);
+        bool DeleteLeague(int id);
         bool Save();
     }
 }
