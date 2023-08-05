@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace _90Zone.BusinessObjects.Models {
-    public class _90ZoneDbContext : DbContext {
+    public class _90ZoneDbContext : IdentityDbContext {
 
         public _90ZoneDbContext() { }
         public _90ZoneDbContext(DbContextOptions<_90ZoneDbContext> options) : base(options) { }
@@ -14,8 +15,20 @@ namespace _90Zone.BusinessObjects.Models {
         public virtual DbSet<Player> Players { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-            optionsBuilder.UseSqlServer("Server= (local); Database = 90Zone; Trusted_Connection=True;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer(GetConnectionString());
         }
+
+        private string GetConnectionString() {
+            IConfiguration config = new ConfigurationBuilder()
+                 .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", true, true)
+                        .Build();
+            var strConn = config["ConnectionStrings:DefaultConnection"];
+
+            return strConn;
+        }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             
             base.OnModelCreating(modelBuilder);

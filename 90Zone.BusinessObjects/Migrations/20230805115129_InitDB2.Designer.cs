@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _90Zone.BusinessObjects.Models;
 
@@ -11,9 +12,11 @@ using _90Zone.BusinessObjects.Models;
 namespace _90Zone.BusinessObjects.Migrations
 {
     [DbContext(typeof(_90ZoneDbContext))]
-    partial class _90ZoneDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230805115129_InitDB2")]
+    partial class InitDB2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
