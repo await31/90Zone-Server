@@ -13,4 +13,15 @@ namespace _90Zone.App.Dto {
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
     }
+
+    public class UserLoginRequestDto {
+
+        //[EmailAddress]
+        [Required(ErrorMessage = "Email is required")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required")]
+        public string Password { get; set; }
+    }
+
 }

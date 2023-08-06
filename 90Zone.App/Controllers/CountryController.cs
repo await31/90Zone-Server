@@ -4,8 +4,11 @@ using _90Zone.Repositories;
 using _90Zone.BusinessObjects.Models;
 using AutoMapper;
 using _90Zone.App.Dto;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace _90Zone.App.Controllers {
+
     [Route("api/[controller]")]
     [ApiController]
     public class CountryController : ControllerBase {
