@@ -49,7 +49,7 @@ namespace _90Zone.App.Controllers {
                 }
 
                 var newUser = new IdentityUser() {
-                    UserName = model.Email,
+                    UserName = model.Username,
                     Email = model.Email
                 };
 
@@ -149,6 +149,7 @@ namespace _90Zone.App.Controllers {
                     new Claim("Id", user.Id),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToUniversalTime().ToString())
                 };
