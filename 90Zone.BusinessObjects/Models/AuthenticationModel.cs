@@ -1,25 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.ComponentModel.DataAnnotations;
 
 namespace _90Zone.BusinessObjects.Models {
 
-    public class RegisterModel {
-        [Required(ErrorMessage = "User Name is required")]
-        public string? Username { get; set; }
+    public class User : IdentityUser {
 
-        [EmailAddress]
-        [Required(ErrorMessage = "Email is required")]
-        public string? Email { get; set; }
+        //public string? ImgPath { get; set; }
 
-        [Required(ErrorMessage = "Password is required")]
-        public string? Password { get; set; }
-    }
-
-    public class LoginModel {
-        [Required(ErrorMessage = "User Name is required")]
-        public string? Username { get; set; }
-
-        [Required(ErrorMessage = "Password is required")]
-        public string? Password { get; set; }
+        public string? Token { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiryTime { get; set; }
     }
 
     public class Response {

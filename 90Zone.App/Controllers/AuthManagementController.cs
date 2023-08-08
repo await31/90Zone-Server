@@ -8,6 +8,9 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Rewrite;
+using AutoMapper;
+using System.Security.Cryptography;
+using _90Zone.Repositories;
 
 namespace _90Zone.App.Controllers {
 
@@ -19,13 +22,19 @@ namespace _90Zone.App.Controllers {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<AuthManagementController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
+        private readonly IUserRepository _userRepository;
 
         public AuthManagementController(
+            IUserRepository userRepository,
+            IMapper mapper,
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             TokenValidationParameters tokenValidationParams,
             ILogger<AuthManagementController> logger,
             IConfiguration configuration) {
+            _userRepository = userRepository;
+            _mapper = mapper;
             _logger = logger;
             _userManager = userManager;
             _roleManager = roleManager;
@@ -82,7 +91,8 @@ namespace _90Zone.App.Controllers {
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequestDto model) {
             if (ModelState.IsValid) {
-                var existingUser = await _userManager.FindByEmailAsync(model.Email);
+
+                var existingUser = _userRepository.GetUsers().FirstOrDefault(a => a.Email == model.Email);
 
                 if (existingUser == null) {
                     return BadRequest(new AuthResult() {
@@ -104,14 +114,19 @@ namespace _90Zone.App.Controllers {
                     });
                 }
 
-                var jwtToken = await GenerateToken(existingUser);
+                existingUser.Token = await GenerateToken(existingUser);
+                var newAccessToken = existingUser.Token;
+                var newRefreshToken = CreateRefreshToken();
+                existingUser.RefreshToken = newRefreshToken;
+                existingUser.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+                _userRepository.Save();
 
-                return Ok(new AuthResult() {
-                    Token = jwtToken,
-                    Result = true
+                return Ok(new TokenApiDto() {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken
                 });
             }
-            return BadRequest( new AuthResult() {
+            return BadRequest(new AuthResult() {
                 Errors = new List<string> {
                     "Invalid payload"
                 },
@@ -128,7 +143,7 @@ namespace _90Zone.App.Controllers {
 
             var tokenDescriptor = new SecurityTokenDescriptor() {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddHours(1),
+                Expires = DateTime.Now.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             };
 
@@ -156,22 +171,86 @@ namespace _90Zone.App.Controllers {
 
             //Getting the claims that we assigned to the user
             var userClaims = await _userManager.GetClaimsAsync(user);
+
+            var userName = await _userManager.GetUserNameAsync(user);
+
             claims.AddRange(userClaims);
 
             //Get the user role and add it to the claims
             var userRoles = await _userManager.GetRolesAsync(user);
-            foreach(var userRole  in userRoles) {
+            foreach (var userRole in userRoles) {
                 var role = await _roleManager.FindByNameAsync(userRole);
                 if (role != null) {
                     claims.Add(new Claim(ClaimTypes.Role, userRole));
+                    claims.Add(new Claim(ClaimTypes.Name, userName));
                     var roleClaims = await _roleManager.GetClaimsAsync(role);
-                    foreach(var roleClaim in roleClaims) {
+                    foreach (var roleClaim in roleClaims) {
                         claims.Add(roleClaim);
                     }
                 }
             }
-
             return claims;
+        }
+
+        private string CreateRefreshToken() {
+            var tokenBytes = RandomNumberGenerator.GetBytes(64);
+            var refreshToken = Convert.ToBase64String(tokenBytes);
+            var tokenInUser = _userRepository.GetUsers()
+                .Any(a => a.RefreshToken == refreshToken);
+            if (tokenInUser) {
+                return CreateRefreshToken();
+            }
+            return refreshToken;
+        }
+
+        private ClaimsPrincipal GetPrincipalFromExpiredToken(string token) {
+            var key = Encoding.ASCII.GetBytes(_configuration.GetSection("JWT:Secret").Value);
+
+            var tokenValidationParams = new TokenValidationParameters {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParams, out SecurityToken securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)) {
+                throw new SecurityTokenException("This is invalid token!");
+            }
+            return principal;
+        }
+
+        [HttpPost]
+        [Route("refresh")]
+        public async Task<IActionResult> Refresh([FromBody]TokenApiDto tokenApiDto) {
+            if (tokenApiDto is null) {
+                return BadRequest("Invalid client request!");
+            }
+            string accessToken = tokenApiDto.AccessToken;
+            string refreshToken = tokenApiDto.RefreshToken;
+            var principal = GetPrincipalFromExpiredToken(accessToken);
+            var username = principal.Identity.Name;
+            var user = _userRepository.GetUsers().FirstOrDefault(a => a.UserName == username);
+
+            if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now) {
+                return BadRequest("Invalid request");
+            }
+
+            var newAccessToken = await GenerateToken(user);
+            var newRefreshToken = CreateRefreshToken();
+            user.RefreshToken = newRefreshToken;
+            _userRepository.Save();
+            return Ok(new TokenApiDto() {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            });
+        }
+
+        public void SetTokenCookie(string tokenValue) {
+            Response.Cookies.Append("token", tokenValue, new CookieOptions { HttpOnly = true });
         }
     }
 }

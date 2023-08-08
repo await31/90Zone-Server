@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using _90Zone.Repositories;
 
 namespace _90Zone.App.Controllers {
 
@@ -18,15 +19,18 @@ namespace _90Zone.App.Controllers {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public class SetupController : ControllerBase {
 
+        private readonly IUserRepository _userRepository;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<SetupController> _logger;
 
         public SetupController(
+            IUserRepository userRepository,
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             ILogger<SetupController> logger) 
         {
+            _userRepository = userRepository;
             _logger = logger;
             _userManager = userManager;
             _roleManager = roleManager;
@@ -47,8 +51,8 @@ namespace _90Zone.App.Controllers {
 
         [HttpGet]
         [Route("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers() {
-            var users = await _userManager.Users.ToListAsync();
+        public IActionResult GetAllUsers() {
+            var users = _userRepository.GetUsers();
             return Ok(users);
         }
 

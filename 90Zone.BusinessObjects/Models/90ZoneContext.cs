@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace _90Zone.BusinessObjects.Models {
-    public class _90ZoneDbContext : IdentityDbContext {
+    public class _90ZoneDbContext : IdentityDbContext<User> {
 
         public _90ZoneDbContext() { }
         public _90ZoneDbContext(DbContextOptions<_90ZoneDbContext> options) : base(options) { }
+
+        public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Club> Clubs { get; set; }
         public virtual DbSet<Country> Countries { get; set; }
         public virtual DbSet<League> Leagues { get; set; }
