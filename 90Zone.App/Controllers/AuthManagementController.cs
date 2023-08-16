@@ -66,7 +66,7 @@ namespace _90Zone.App.Controllers {
 
                 if (isCreated.Succeeded) {
 
-                    await _userManager.AddToRoleAsync(newUser, "Admin");
+                    await _userManager.AddToRoleAsync(newUser, "Journalist");
 
                     var token = await GenerateToken(newUser);
 
@@ -247,10 +247,6 @@ namespace _90Zone.App.Controllers {
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshToken
             });
-        }
-
-        public void SetTokenCookie(string tokenValue) {
-            Response.Cookies.Append("token", tokenValue, new CookieOptions { HttpOnly = true });
         }
     }
 }
